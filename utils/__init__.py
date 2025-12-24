@@ -1,0 +1,1 @@
+from .integral_image import IntegralImage
