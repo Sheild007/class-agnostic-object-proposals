@@ -21,4 +21,31 @@ class IntegralImage:
         
         return ii_padded
 
-    
+    def get_sum(self, r1: int, c1: int, r2: int, c2: int) -> float:
+      
+        
+        h, w = self.original_shape
+        r1 = max(0, min(r1, h - 1))
+        c1 = max(0, min(c1, w - 1))
+        r2 = max(0, min(r2, h - 1))
+        c2 = max(0, min(c2, w - 1))
+
+        
+        if r1 > r2: 
+            r1, r2 = r2, r1
+        if c1 > c2: 
+            c1, c2 = c2, c1
+
+     
+        # Using the padded integral image:
+        # A = (r2+1, c2+1) -> Bottom Right (row r2, col c2 in original )
+        # B = (r1,   c2+1) -> Top Right (row r1-1, col c2 in original )
+        # C = (r2+1, c1)   -> Bottom Left (row r2, col c1-1 in original )
+        # D = (r1,   c1)   -> Top Left (row r1-1, col c1-1 in original )
+
+        A = self.ii[r2 + 1, c2 + 1]
+        B = self.ii[r1,     c2 + 1]
+        C = self.ii[r2 + 1, c1]
+        D = self.ii[r1,     c1]
+
+        return A - B - C + D
