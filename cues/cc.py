@@ -57,7 +57,7 @@ class ColorContrast:
         chi2 = 0.0
         for i in range(len(hist1)):
             if hist1[i] + hist2[i] > 0:
-                chi2 += (hist1[i] - hist2[i]) ** 2 / (hist1[i] + hist2[i])
+                chi2 += (hist1[i] - hist2[i]) ** 2 / ((hist1[i] + hist2[i])+1e-10)
         return chi2
     
     def score_window(self, window: Tuple[int, int, int, int]) -> float:
