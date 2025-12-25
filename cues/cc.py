@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from utils import Integralimg
+from utils import IntegralImage
 from typing import Tuple
 
 
@@ -34,7 +34,7 @@ class ColorContrast:
         self.integral_hists = []
         for id in range(self.total_bins):
             bin_mask = (self.quantized_img == id).astype(np.float64)
-            self.integral_hists.append(Integralimg(bin_mask))
+            self.integral_hists.append(IntegralImage(bin_mask))
         
         return self.quantized_img
     
