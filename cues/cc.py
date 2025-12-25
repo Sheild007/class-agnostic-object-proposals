@@ -88,8 +88,8 @@ class ColorContrast:
         
         if ring_area > 0:
             hist_ring = (hist_surround * surround_area - hist_window * window_area) / ring_area
-            if hist_ring < 0:
-                hist_ring = np.zeros_like(hist_ring)
+          
+            hist_ring = np.clip(hist_ring, 0, None)
             if hist_ring.sum() > 0:
                 hist_ring /= hist_ring.sum()
             else:
