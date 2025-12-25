@@ -1,6 +1,6 @@
 import numpy as np
 
-def compute_iou(self, box1, box2):
+def compute_iou( box1, box2):
 
     x1 = max(box1[0], box2[0])
     y1 = max(box1[1], box2[1])
@@ -16,7 +16,7 @@ def compute_iou(self, box1, box2):
     
     return inter / (area1 + area2 - inter)
 
-def generate_random_windows(self, img_shape, count=1000):
+def generate_random_windows(img_shape, count=1000):
 
     h, w = img_shape[:2]
     windows = []
