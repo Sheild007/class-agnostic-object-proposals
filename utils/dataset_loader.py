@@ -21,7 +21,7 @@ class DataSetLoader:
             if f.endswith(".xml"):  
                 xml_files.append(f)
         xml_files.sort()
-        
+
         if max_images:
             xml_files = xml_files[:max_images]
             
@@ -59,6 +59,15 @@ class DataSetLoader:
             })
             
         return {'filename': root.find('filename').text, 'objects': objects}
+    
+    @staticmethod
+    def get_gt_windows(ann: Dict) -> List[Tuple[int, int, int, int]]:
+        windows = []
+        for obj in ann['objects']:
+            xmin, ymin, xmax, ymax = obj['bbox']
+            window = (ymin, xmin, ymax, xmax)
+            windows.append(window)
+        return windows
     
     def load_image_file(self, filename: str) -> np.ndarray:
         
