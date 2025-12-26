@@ -168,23 +168,96 @@ def train(args):
         pickle.dump(learned_params, f)
     print(f"\nTraining Complete. Parameters saved to {PARAMS_FILE}")
 
+def test(args):
+  
+    if not os.path.exists(PARAMS_FILE):
+        print(f"Error: {PARAMS_FILE} not found. Run --train comand first.") 
+        return
 
+    print(f"Testing (Images: {args.num_images})")
+    
+  
+    with open(PARAMS_FILE, 'rb') as f:
+        params = pickle.load(f)
+    print(f"Loaded Params: {params}")
+
+    loader = DataSetLoader(args.data_path)
+    dataset = loader.load_dataset(max_images=args.num_images)
+
+ 
+    ms = MSSaliency()
+    ms.thresholds = params['ms_thresholds']
+ 
+    out_dir = "Results"
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    for i, (image, ann) in enumerate(dataset):
+        print(f"Processing Image {i+1}/{len(dataset)}---")
+
+        vis_img = image.copy()
+  
+        cc = ColorContrast(theta_cc=params['theta_cc'], num_bins=(4,4,4))
+        cc.compute_quantized_lab(image)
+        
+        ss = SuperpixelsStraddling(scale=params['theta_ss'], min_size=50)
+        ss.compute_segmentation(image)
+        
+        ii_ms = ms.get_integral_saliency(image)
+        windows = generate_random_windows(image.shape, count=500)
+        
+        scored_windows = []
+        
+        for win in windows:
+            try:
+                s_ms = ms.score_window(ii_ms, win)
+                s_cc = cc.score_window(win)
+                s_ss = ss.score_window(win)
+                
+                final_score = (s_ms + s_cc + s_ss) / 3.0
+                scored_windows.append((final_score, win))
+            except:
+                continue
+        
+        
+        scored_windows.sort(key=lambda x: x[0], reverse=True)
+        top_windows = scored_windows[:5]
+        
+     
+        for score, (r1, c1, r2, c2) in top_windows:
+            cv2.rectangle(vis_img, (c1, r1), (c2, r2), (0, 0, 255), 2)
+            cv2.putText(vis_img, f"{score:.2f}", (c1, r1-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 1)
+            
+    
+        for obj in ann['objects']:
+            gx1, gy1, gx2, gy2 = obj['bbox']
+            cv2.rectangle(vis_img, (gx1, gy1), (gx2, gy2), (0, 255, 0), 2)
+
+      
+        save_path = os.path.join(out_dir, f"result_{i}.jpg")
+        cv2.imwrite(save_path, vis_img)
+        print(f"  Saved to {save_path}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Generic Objectness Estimation")
+    parser = argparse.ArgumentParser(description="Generic Objectness Estimation (Group B)")
     
-
+    
     parser.add_argument('--train', action='store_true', help="Run Training Phase")
-  
- 
+    parser.add_argument('--test', action='store_true', help="Run Testing/Visualization Phase")
+    
+    
     parser.add_argument('--data_path', type=str, default="./data", help="Path to PASCAL VOC 'data' folder")
     parser.add_argument('--num_images', type=int, default=10, help="Number of images to use")
     
     args = parser.parse_args()
     
- 
-    train(args)
-   
+    if args.train:
+        train(args)
+    elif args.test: 
+        test(args)
+    else:
+        print("Please specify --train or --test")
+        print("Example: python main.py --train --num_images 20")
 
 if __name__ == "__main__":
     main()
