@@ -1,2 +1,6 @@
 __pycache__/
-data/
+data/# Generated outputs
+Results/
+Results-good/
+test_results/
+learned_params.pkl
